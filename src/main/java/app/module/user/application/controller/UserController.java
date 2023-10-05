@@ -5,11 +5,15 @@ import app.module.user.infrastructure.entity.User;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 
 @Path("users")
 public class UserController {
+    @Inject
+    private UserDao userDao;
+
     @Path("all")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -17,7 +21,7 @@ public class UserController {
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
 
-        return mapper.writeValueAsString(UserDao.getUsers());
+        return mapper.writeValueAsString(userDao.getUsers());
     }
 
     @POST
@@ -31,7 +35,7 @@ public class UserController {
         @FormParam("email") String email
     ) {
         User user = new User(id, name, password, email);
-        UserDao.addUser(user);
+        userDao.addUser(user);
 
         return user;
     }
@@ -41,7 +45,7 @@ public class UserController {
     @Produces(MediaType.TEXT_PLAIN)
     @Path("update/{id}")
     public String updateUserEmail(@PathParam("id") int id, @FormParam("email") String email) {
-        UserDao.updateUserEmail(id, email);
+        userDao.updateUserEmail(id, email);
 
         return "email updated!";
     }
@@ -50,7 +54,7 @@ public class UserController {
     @Produces(MediaType.TEXT_PLAIN)
     @Path("delete/{id}")
     public String deleteUser(@PathParam("id") int id) {
-        UserDao.deleteUser(id);
+        userDao.deleteUser(id);
 
         return "user deleted!";
     }
