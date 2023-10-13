@@ -5,16 +5,12 @@ import app.module.user.infrastructure.entity.User;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @ApplicationScoped
 public class UserDao {
     @Inject
     private DbSession dbSession;
-
-    private static final List<User> users = new ArrayList<>();
 
     public List<User> getUsers() {
         List<User> users = dbSession.createQuery(User.class).getResultList();
@@ -24,32 +20,47 @@ public class UserDao {
     }
 
     public void addUser(User user) {
-        save(user);
+        save(user, true, true);
     }
 
     public void updateUserEmail(int id, String email) {
-        Optional<User> userValue = findUserById(id);
+        dbSession.beginTransaction();
+        User user = findUser(id);
 
-        if (userValue.isPresent()) {
-            User user = userValue.get();
+        if (user != null) {
             user.setEmail(email);
-            save(user);
+            save(user, false, false);
         }
+
+        dbSession.close();
     }
 
     public void deleteUser(int id) {
-        Optional<User> userValue = findUserById(id);
-        userValue.ifPresent(users::remove);
-    }
-
-    private Optional<User> findUserById(int id) {
-        return users.stream().filter(user -> user.getId() == id).findFirst();
-    }
-
-    private void save(User user) {
         dbSession.beginTransaction();
+        User user = findUser(id);
+
+        if (user != null) {
+            dbSession.getSession().remove(user);
+            dbSession.flush();
+        }
+
+        dbSession.close();
+    }
+
+    public User findUser(int id) {
+        return dbSession.getSession().find(User.class, id);
+    }
+
+    private void save(User user, boolean begin, boolean close) {
+        if (begin) {
+            dbSession.beginTransaction();
+        }
+
         dbSession.persist(user);
         dbSession.flush();
-        dbSession.close();
+
+        if (close) {
+            dbSession.close();
+        }
     }
 }
