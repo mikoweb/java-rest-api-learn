@@ -24,12 +24,17 @@ public class UserDao {
     }
 
     public void addUser(User user) {
-        users.add(user);
+        save(user);
     }
 
     public void updateUserEmail(int id, String email) {
         Optional<User> userValue = findUserById(id);
-        userValue.ifPresent(user -> user.setEmail(email));
+
+        if (userValue.isPresent()) {
+            User user = userValue.get();
+            user.setEmail(email);
+            save(user);
+        }
     }
 
     public void deleteUser(int id) {
@@ -39,5 +44,12 @@ public class UserDao {
 
     private Optional<User> findUserById(int id) {
         return users.stream().filter(user -> user.getId() == id).findFirst();
+    }
+
+    private void save(User user) {
+        dbSession.beginTransaction();
+        dbSession.persist(user);
+        dbSession.flush();
+        dbSession.close();
     }
 }

@@ -29,12 +29,11 @@ public class UserController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("add")
     public User addUser(
-        @FormParam("id") int id,
         @FormParam("name") String name,
         @FormParam("password") String password,
         @FormParam("email") String email
     ) {
-        User user = new User(id, name, password, email);
+        User user = new User(name, password, email);
         userDao.addUser(user);
 
         return user;

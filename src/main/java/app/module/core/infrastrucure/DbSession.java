@@ -22,6 +22,14 @@ public class DbSession {
         return sessionFactory.getCurrentSession();
     }
 
+    public void persist(Object entity) {
+        getSession().persist(entity);
+    }
+
+    public void flush() {
+        getSession().flush();
+    }
+
     public CriteriaBuilder getCriteriaBuilder() {
         return getSession().getCriteriaBuilder();
     }
@@ -35,6 +43,10 @@ public class DbSession {
         cr.select(root);
 
         return getSession().createQuery(cr);
+    }
+
+    public void beginTransaction() {
+        getSession().beginTransaction();
     }
 
     public void close() {
